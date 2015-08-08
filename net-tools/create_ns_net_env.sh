@@ -69,8 +69,8 @@ create_one_node(){
 }
 
 
-# source it and create env like that.
-#create_one_node zongguo br1 "2.2.2.2/24"
+#create_one_node <namespace_name> <ovs_br> <cider>
+create_one_node "$1" "$2" "$3"
 
 
 
