@@ -12,10 +12,10 @@ create_namespace(){
 
 create_vethpair_and_plugin_namespace(){
     # $1: name of namespace which plugin the veth pair.
-    ip link show if_${1}_out > /dev/null
+    ip link show ex_${1} > /dev/null
     if [ "$?" != "0" ];then
         echo "Create veth pair for namespace $1"
-        ip link add name if_${1}_out type veth peer name if_${1}
+        ip link add name ex_${1} type veth peer name if_${1}
     else
         echo "Veth pair is already exists in namespace $1"
     fi
@@ -40,18 +40,18 @@ create_ovs_br_plugin_veth(){
         echo "Bridge $2 is exist already."
     fi
 
-    ovs-vsctl list-ports $2 | grep if_${1}_out > /dev/null
+    ovs-vsctl list-ports $2 | grep ex_${1} > /dev/null
     if [ $? != 0 ];then
-        ovs-vsctl add-port $2 if_${1}_out
+        ovs-vsctl add-port $2 ex_${1}
     else
-        echo "Bridge $2 had port if_${1}_out already."
+        echo "Bridge $2 had port ex_${1} already."
     fi
 }
 
 set_net_env(){
     # $1: namespace name
     # $2: cidr for namespace interface
-    ip link set dev if_${1}_out up
+    ip link set dev ex_${1} up
     ip netns exec $1 ip link set dev lo up
     ip netns exec $1 ip link set dev if_${1} up
     ip netns exec $1 ip address add $2 dev if_${1}
