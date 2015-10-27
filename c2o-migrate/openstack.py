@@ -6,6 +6,37 @@ from neutronclient.neutron import client as neutron_client
 from keystoneclient.v2_0 import client as keystone_client
 from glanceclient.v1 import client as glance_client
 
+class AuthInfo(object):
+    """
+    get infomation from openrc file.
+    """
+    def __init__(self, rc_file):
+        self.rc = open(rc_file).read().split('\n')
+        self.url_suffix = "35357/v2.0"
+        self.user_name = None
+        self.tenant_name = None
+        self.user_password = None
+        self.auth_url = None
+        self.keystone_token = None
+
+    def _value_inline(self,line):
+        return line.split('=')[1].split('\'')[1]
+
+    def get_env(self, rc):
+        for line in rc:
+            if 'OS_USERNAME' in line:
+                self.user_name = self._value_inline(line)
+            elif 'OS_TENANT_NAME' in line:
+                self.tenant_name = self._value_inline(line)
+            elif 'OS_PASSWORD' in line:
+                self.user_password = self._value_inline(line)
+            elif 'OS_AUTH_URL' in line:
+                tmp = self._value_inline(line).split(':')
+                self.auth_url = tmp[0] + ":" + tmp[1] + ":" + self.url_suffix
+
+        # I dont know how to get keystone token, Set it to the value of user_password.
+        self.keystone_token = self.user_password
+
 class OpenstackManager(object):
     """ The Openstack Manager for Migrate from cloudstack to openstack."""
     def __init__(self, user_name, user_password, tenant_name, auth_url, keystone_token):
@@ -153,7 +184,12 @@ class OpenstackManager(object):
 
 
 if __name__ == '__main__':
-    openstack = OpenstackManager("admin", "admin", "admin", "http://10.27.2.1:35357/v2.0", "0s4c10ud")
+    #get the auth info from openrc file.
+    #openstack = OpenstackManager("admin", "admin", "admin", "http://10.27.2.1:35357/v2.0", "0s4c10ud")
+    info = AuthInfo('/root/openrc')
+    info.get_env(info.rc)
+    print "info list: user %s, password %s, tenant %s, auth_url %s,  keytone_token %s" % (info.user_name, info.user_password, info.tenant_name, info.auth_url, info.keystone_token)
+    openstack = OpenstackManager(info.user_name, info.user_password, info.tenant_name, info.auth_url, info.keystone_token)
 
     print ###keystone-test###
     openstack._get_endpoint()
