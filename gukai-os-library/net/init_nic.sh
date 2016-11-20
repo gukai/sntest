@@ -7,7 +7,7 @@ echo $hostname > /etc/hostname
 
 #get NIC name
 nic1="eno16777736"
-tmp_var=`ip -o link show | grep -v LOOPBACK | grep -v eno16777736 | awk '{print $2}'`
+tmp_var=`ip -o link show | grep -v LOOPBACK | grep -v eno16777736| grep -v docker | awk '{print $2}'`
 nic2=${tmp_var%:}
 
 #get NIC path
